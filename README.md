@@ -29,7 +29,7 @@ The goal is to ensure that **limited career awareness does not limit a student's
 
 - Python 3.10 or newer
 - Node.js and npm
-- A PostgreSQL database for persistent production deployment (local development uses SQLite)
+- SQLite (included with Python)
 
 ## Project Structure
 
@@ -66,17 +66,7 @@ The API is available at `http://localhost:8000/`. The local database is `Backend
 
 ### Backend Configuration
 
-The default settings use SQLite. Set these environment variables when using PostgreSQL/Supabase:
-
-- `USE_SUPABASE_DB=1`
-- `SUPABASE_DB_URL` or `DATABASE_URL`
-- `SUPABASE_DB_NAME` (default `postgres`)
-- `SUPABASE_DB_USER` (default `postgres`)
-- `SUPABASE_DB_PASSWORD`
-- `SUPABASE_DB_HOST`
-- `SUPABASE_DB_PORT` (default `5432`)
-
-Optional settings are `DJANGO_SECRET_KEY` and `DJANGO_DEBUG`. `DJANGO_DEBUG` is enabled when set to `1`; otherwise it is disabled.
+The project uses SQLite at `Backend/db.sqlite3`. Optional settings are `DJANGO_SECRET_KEY` and `DJANGO_DEBUG`. `DJANGO_DEBUG` is enabled when set to `1`; otherwise it is disabled.
 
 ## Frontend Setup
 
@@ -131,18 +121,22 @@ Deploy the backend and frontend as two separate Vercel projects.
 
 1. Create a Vercel project from this repository and set its **Root Directory** to `Backend`.
 2. Keep the included `Backend/vercel.json`; it sends requests to `api/index.py`, which loads the Django WSGI application.
-3. Add production environment variables in Vercel: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=0`, `USE_SUPABASE_DB=1`, and the PostgreSQL variables listed above.
-4. Run migrations against the production PostgreSQL database before using the API:
+3. Add `DJANGO_SECRET_KEY` and `DJANGO_DEBUG=0` in Vercel.
+4. Run migrations before using the API:
 
    ```powershell
    cd Backend
-   $env:USE_SUPABASE_DB="1"
-   $env:SUPABASE_DB_URL="<postgres-connection-url>"
    python manage.py migrate
    ```
 
-   Do not use the default SQLite database for production: Vercel function storage is not a persistent application database.
+  On Vercel, the bundled SQLite database is copied to writable `/tmp/db.sqlite3` at runtime so the API can start. `/tmp` is ephemeral, so data and admin sessions can be lost when functions are rebuilt or replaced. SQLite is suitable for development or demonstration deployments, not persistent production data.
 5. Confirm the deployment with `https://<backend-project>.vercel.app/api/health/`.
+
+The backend root URL (`/`) also returns `{"status": "ok"}`. The Django admin URL is `/admin/`; create its superuser in the same production database after migrations:
+
+```powershell
+python manage.py createsuperuser
+```
 
 The trained files `Backend/model/ourmodel.pkl` and `Backend/model/scaler.pkl` must remain in the deployment.
 

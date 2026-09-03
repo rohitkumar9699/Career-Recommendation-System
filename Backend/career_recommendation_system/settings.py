@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import shutil
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -62,43 +63,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'career_recommendation_system.wsgi.application'
 
-SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-SUPABASE_PUBLISHABLE_KEY = os.getenv('SUPABASE_PUBLISHABLE_KEY', '')
-SUPABASE_SECRET_KEY = os.getenv('SUPABASE_SECRET_KEY', '')
-SUPABASE_JWKS_URL = os.getenv('SUPABASE_JWKS_URL', '')
+DATABASE_PATH = BASE_DIR / 'db.sqlite3'
+if os.getenv('VERCEL'):
+    vercel_database_path = Path('/tmp/db.sqlite3')
+    if DATABASE_PATH.exists() and not vercel_database_path.exists():
+        shutil.copy2(DATABASE_PATH, vercel_database_path)
+    DATABASE_PATH = vercel_database_path
 
-SUPABASE_DB_URL = os.getenv('SUPABASE_DB_URL') or os.getenv('DATABASE_URL')
-USE_SUPABASE_DB = os.getenv('USE_SUPABASE_DB', '0') == '1'
-if USE_SUPABASE_DB:
-    if not SUPABASE_DB_URL:
-        raise RuntimeError('USE_SUPABASE_DB=1 requires SUPABASE_DB_URL or DATABASE_URL.')
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('SUPABASE_DB_NAME', 'postgres'),
-            'USER': os.getenv('SUPABASE_DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD', ''),
-            'HOST': os.getenv('SUPABASE_DB_HOST', ''),
-            'PORT': os.getenv('SUPABASE_DB_PORT', '5432'),
-            'OPTIONS': {'sslmode': 'require'},
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DATABASE_PATH,
     }
-    from urllib.parse import urlparse
-    database_url = urlparse(SUPABASE_DB_URL)
-    DATABASES['default'].update({
-        'NAME': database_url.path.lstrip('/') or DATABASES['default']['NAME'],
-        'USER': database_url.username or DATABASES['default']['USER'],
-        'PASSWORD': database_url.password or DATABASES['default']['PASSWORD'],
-        'HOST': database_url.hostname or DATABASES['default']['HOST'],
-        'PORT': str(database_url.port or DATABASES['default']['PORT']),
-    })
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
