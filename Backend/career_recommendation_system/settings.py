@@ -66,6 +66,7 @@ WSGI_APPLICATION = 'career_recommendation_system.wsgi.application'
 DATABASE_PATH = BASE_DIR / 'db.sqlite3'
 if os.getenv('VERCEL'):
     vercel_database_path = Path('/tmp/db.sqlite3')
+    vercel_database_path.parent.mkdir(parents=True, exist_ok=True)
     if DATABASE_PATH.exists() and not vercel_database_path.exists():
         shutil.copy2(DATABASE_PATH, vercel_database_path)
     DATABASE_PATH = vercel_database_path
