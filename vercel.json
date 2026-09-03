@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://REPLACE_WITH_BACKEND_PROJECT.vercel.app/api/$1"
+      "destination": "https://backend-ecru-phi-99.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",

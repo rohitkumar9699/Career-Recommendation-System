@@ -143,7 +143,7 @@ The trained files `Backend/model/ourmodel.pkl` and `Backend/model/scaler.pkl` mu
 ### 2. Deploy Angular
 
 1. Create a second Vercel project from the same repository and set its **Root Directory** to `frontend`.
-2. In the applicable Vercel config (`vercel.json` at the repository root when Root Directory is the repository, or `frontend/vercel.json` when Root Directory is `frontend`), replace `REPLACE_WITH_BACKEND_PROJECT.vercel.app` with the deployed backend hostname.
+2. The current frontend rewrite targets `https://backend-ecru-phi-99.vercel.app`. Update both Vercel config files if the backend hostname changes.
 3. Deploy. The configuration runs `npm run build`, serves Angular's `dist/frontend/browser` output, proxies `/api/*` to Django, and rewrites other paths to `index.html` for the single-page application.
 
 The frontend source uses same-origin `/api` URLs, so local requests use `frontend/proxy.conf.json` and deployed requests use the Vercel rewrite.
