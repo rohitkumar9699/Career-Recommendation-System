@@ -121,7 +121,7 @@ Deploy the backend and frontend as two separate Vercel projects.
 
 1. Create a Vercel project from this repository and set its **Root Directory** to `Backend`.
 2. Keep the included `Backend/vercel.json`; it sends requests to `api/index.py`, which loads the Django WSGI application.
-3. Add `DJANGO_SECRET_KEY` and `DJANGO_DEBUG=0` in Vercel.
+3. Add a stable `DJANGO_SECRET_KEY` and `DJANGO_DEBUG=0` in Vercel. The stable secret is required to keep signed admin sessions valid across serverless instances.
 4. Run migrations before using the API:
 
    ```powershell
