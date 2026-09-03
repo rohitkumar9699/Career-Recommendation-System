@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.env.example
+# Django
+*.log
+local_settings.py
+media/
+staticfiles/
+
+# Local database
+*.sqlite3
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+.cache/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
