@@ -10,6 +10,7 @@ if os.getenv('VERCEL'):
 
 	setup()
 	call_command('migrate', interactive=False, verbosity=0)
+	call_command('collectstatic', interactive=False, verbosity=0, clear=False)
 
 	from django.contrib.auth import get_user_model
 
