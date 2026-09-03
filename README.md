@@ -94,7 +94,7 @@ Open `http://localhost:4200/`. The Angular development proxy sends `/api` reques
 npm run build
 ```
 
-The build is written to `frontend/dist/frontend`. Unit tests use Karma:
+The build is written to `frontend/dist/frontend/browser`. Unit tests use Karma:
 
 ```powershell
 npm test
@@ -149,8 +149,8 @@ The trained files `Backend/model/ourmodel.pkl` and `Backend/model/scaler.pkl` mu
 ### 2. Deploy Angular
 
 1. Create a second Vercel project from the same repository and set its **Root Directory** to `frontend`.
-2. In `frontend/vercel.json`, replace `REPLACE_WITH_BACKEND_PROJECT.vercel.app` with the deployed backend hostname, keeping the `/api/$1` suffix.
-3. Deploy. The configuration runs `npm run build`, serves `dist/frontend`, proxies `/api/*` to Django, and rewrites other paths to `index.html` for the single-page application.
+2. In the applicable Vercel config (`vercel.json` at the repository root when Root Directory is the repository, or `frontend/vercel.json` when Root Directory is `frontend`), replace `REPLACE_WITH_BACKEND_PROJECT.vercel.app` with the deployed backend hostname.
+3. Deploy. The configuration runs `npm run build`, serves Angular's `dist/frontend/browser` output, proxies `/api/*` to Django, and rewrites other paths to `index.html` for the single-page application.
 
 The frontend source uses same-origin `/api` URLs, so local requests use `frontend/proxy.conf.json` and deployed requests use the Vercel rewrite.
 
