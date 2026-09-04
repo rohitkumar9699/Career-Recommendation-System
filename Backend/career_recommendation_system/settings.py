@@ -13,8 +13,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import shutil
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
+
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key')
 DEBUG = os.getenv('DJANGO_DEBUG', '1') == '1'
@@ -72,12 +76,42 @@ if os.getenv('VERCEL'):
         shutil.copy2(DATABASE_PATH, vercel_database_path)
     DATABASE_PATH = vercel_database_path
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DATABASE_PATH,
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    database_url = urlparse(DATABASE_URL)
+    database_query = parse_qs(database_url.query)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': unquote(database_url.path.lstrip('/')),
+            'USER': unquote(database_url.username or ''),
+            'PASSWORD': unquote(database_url.password or ''),
+            'HOST': database_url.hostname,
+            'PORT': str(database_url.port or 5432),
+            'OPTIONS': {
+                'sslmode': database_query.get('sslmode', ['require'])[0],
+            },
+        }
     }
-}
+elif os.getenv('POSTGRES_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+            'USER': os.getenv('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+            'HOST': os.getenv('POSTGRES_HOST'),
+            'PORT': os.getenv('POSTGRES_PORT', '5432'),
+            'OPTIONS': {'sslmode': os.getenv('POSTGRES_SSLMODE', 'require')},
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': DATABASE_PATH,
+        }
+    }
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_SAMESITE = 'Lax'

@@ -29,7 +29,7 @@ The goal is to ensure that **limited career awareness does not limit a student's
 
 - Python 3.10 or newer
 - Node.js and npm
-- SQLite (included with Python)
+- PostgreSQL (Supabase) or SQLite for local fallback
 
 ## Project Structure
 
@@ -66,7 +66,17 @@ The API is available at `http://localhost:8000/`. The local database is `Backend
 
 ### Backend Configuration
 
-The project uses SQLite at `Backend/db.sqlite3`. Optional settings are `DJANGO_SECRET_KEY` and `DJANGO_DEBUG`. `DJANGO_DEBUG` is enabled when set to `1`; otherwise it is disabled.
+The project uses Supabase PostgreSQL when `DATABASE_URL` or `POSTGRES_HOST` is set, and otherwise falls back to SQLite at `Backend/db.sqlite3`. Optional settings are `DJANGO_SECRET_KEY` and `DJANGO_DEBUG`. `DJANGO_DEBUG` is enabled when set to `1`; otherwise it is disabled.
+
+For Supabase, set the connection string without committing it to the repository:
+
+```powershell
+$env:DATABASE_URL = "postgresql://postgres:YOUR_PASSWORD@db.tmyudurgffruojczssbl.supabase.co:5432/postgres?sslmode=require"
+python manage.py migrate
+python manage.py runserver
+```
+
+The same `DATABASE_URL` environment variable must be configured in the Vercel backend project. Supabase requires SSL, which is enabled by default. If the password contains URL-reserved characters, URL-encode them in the connection string.
 
 ## Frontend Setup
 
