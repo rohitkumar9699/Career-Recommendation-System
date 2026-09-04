@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import AdminUser, AssessmentResult, Student
+from .models import AssessmentResult, Student
 
 
 @admin.register(Student)
@@ -23,10 +23,3 @@ class AssessmentResultAdmin(admin.ModelAdmin):
 	search_fields = ('student__username', 'student__email')
 	list_filter = ('gender', 'part_time_job', 'extracurricular_activities')
 
-
-@admin.register(AdminUser)
-class AdminUserAdmin(admin.ModelAdmin):
-	list_display = ('admin_name', 'admin_email', 'status')
-	search_fields = ('admin_name', 'admin_email')
-	list_filter = ('status',)
-	exclude = ('admin_password',)

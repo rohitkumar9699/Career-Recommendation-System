@@ -1,11 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Student } from './api.service';
+import { Student } from './models';
 import { AuthApiService } from './auth-api.service';
 import { StudentApiService } from './student-api.service';
 import { AssessmentApiService } from './assessment-api.service';
-import { AdminApiService } from './admin-api.service';
 
 interface Assessment {
   [key: string]: string | number | boolean;
@@ -50,21 +49,15 @@ export class AppComponent {
   private readonly authApi = inject(AuthApiService);
   private readonly studentApi = inject(StudentApiService);
   private readonly assessmentApi = inject(AssessmentApiService);
-  private readonly adminApi = inject(AdminApiService);
-  view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' | 'admin' = 'welcome';
+  view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' = 'welcome';
   darkMode = localStorage.getItem('theme') === 'dark';
   student: Student | null = null;
-  admin: { admin_name: string; admin_email: string } | null = null;
-  students: Student[] = [];
-  selectedStudent: Student | null = null;
   message = '';
   error = '';
   isSubmitting = false;
   loginData = { email: '', password: '' };
   registerData = { username: '', email: '', password: '', mobile: '', gender: 'male' };
   profileData = { name: '', mobile: '' };
-  adminData = { email: '', password: '' };
-  searchEmail = '';
   assessment: Assessment = {
     gender: 'male', part_time_job: false, absence_days: 0, extracurricular_activities: false,
     weekly_self_study_hours: 0, math_score: 0, history_score: 0, physics_score: 0,
@@ -91,7 +84,7 @@ export class AppComponent {
     }
   }
 
-  go(view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' | 'admin') {
+  go(view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update') {
     this.clearStatus();
     this.view = view;
   }
@@ -173,37 +166,10 @@ export class AppComponent {
     }, error: error => this.error = this.apiError(error, 'Profile update failed.') });
   }
 
-  submitAdminLogin() {
-    this.clearStatus();
-    this.adminApi.login(this.adminData).subscribe({ next: response => {
-      this.admin = response.admin;
-      this.loadStudents();
-    }, error: error => this.error = this.apiError(error, 'Admin sign in failed.') });
-  }
-
-  loadStudents() {
-    this.adminApi.students().subscribe({ next: students => { this.students = students; this.view = 'admin'; }, error: error => this.error = this.apiError(error, 'Unable to load student records.') });
-  }
-
-  searchStudent() {
-    this.clearStatus();
-    this.adminApi.search(this.searchEmail).subscribe({ next: student => this.selectedStudent = student, error: error => this.error = this.apiError(error, 'Student not found.') });
-  }
-
-  deleteStudent() {
-    if (!this.selectedStudent) return;
-    this.adminApi.delete(this.selectedStudent.id).subscribe({ next: response => {
-      this.message = response.message;
-      this.selectedStudent = null;
-      this.loadStudents();
-    }, error: error => this.error = this.apiError(error, 'Unable to delete student.') });
-  }
-
   logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('student');
     this.student = null;
-    this.admin = null;
     this.go('welcome');
   }
 

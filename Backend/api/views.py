@@ -7,9 +7,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import AdminUser, AssessmentResult
+from .models import AssessmentResult
 from .recommendation import generate_recommendations
-from .serializers import AdminUserSerializer, RegisterStudentSerializer, StudentSerializer
+from .serializers import RegisterStudentSerializer, StudentSerializer
 
 Student = get_user_model()
 
@@ -142,45 +142,3 @@ def submit_assessment(request):
     return Response({'message': 'Submission successful.', 'recommendations': recommendations}, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def admin_login(request):
-    email = request.data.get('email')
-    password = request.data.get('password')
-    admin = AdminUser.objects.filter(admin_email=email, admin_password=password).first()
-    if admin:
-        return Response({'message': 'Admin login successful.', 'admin': AdminUserSerializer(admin).data}, status=status.HTTP_200_OK)
-    return Response({'message': 'Invalid email or password.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def admin_students(request):
-    students = Student.objects.all()
-    return Response(StudentSerializer(students, many=True).data)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def admin_search_student(request):
-    email = request.data.get('email')
-    student = Student.objects.filter(email=email).first()
-    if student:
-        return Response(StudentSerializer(student).data)
-    return Response({'message': 'Data does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def admin_delete_student(request):
-    student_id = request.data.get('student_id')
-    if not student_id:
-        return Response({'message': 'Student ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    student = Student.objects.filter(id=student_id).first()
-    if not student:
-        return Response({'message': 'Student not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    AssessmentResult.objects.filter(student=student).delete()
-    student.delete()
-    return Response({'message': 'Deletion successful.'}, status=status.HTTP_200_OK)

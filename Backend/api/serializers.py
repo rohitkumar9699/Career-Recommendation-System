@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import AssessmentResult, AdminUser
+from .models import AssessmentResult
 
 Student = get_user_model()
 
@@ -62,14 +62,3 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Password must be at least 8 characters long.')
         return value
 
-
-class AssessmentResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AssessmentResult
-        fields = '__all__'
-
-
-class AdminUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AdminUser
-        fields = ['id', 'admin_name', 'admin_email']

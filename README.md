@@ -62,7 +62,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-The API is available at `http://localhost:8000/`. The local database is `Backend/db.sqlite3`. Create an administrator account for Django admin with `python manage.py createsuperuser` if needed.
+The API is available at `http://localhost:8000/`. The local database is `Backend/db.sqlite3`. Students can register from the application.
 
 ### Backend Configuration
 
@@ -114,14 +114,10 @@ All application endpoints use the `/api/` prefix. JWT-protected endpoints requir
 | POST | `/api/assessment/submit/` | Submit one assessment and return three recommendations |
 | POST | `/api/token/` | SimpleJWT token endpoint |
 | POST | `/api/token/refresh/` | Refresh a JWT |
-| POST | `/api/admin/login/` | Admin login with `email` and `password` |
-| GET | `/api/admin/students/` | List student records |
-| POST | `/api/admin/search/` | Find a student by `{ "email": "..." }` |
-| POST | `/api/admin/delete/` | Delete a student by `{ "student_id": <id> }` |
 
 Assessment submissions require `gender`, `absence_days`, `weekly_self_study_hours`, and scores for `math_score`, `history_score`, `physics_score`, `chemistry_score`, `biology_score`, `english_score`, and `geography_score`. Scores must be from 0 to 100. The frontend also sends `part_time_job`, `extracurricular_activities`, `total_score`, and `average_score`.
 
-The current admin endpoints are publicly permitted by the Django views and use the stored `AdminUser` password value directly. Protect them before exposing the API publicly.
+Django admin is available at `/admin/` for authorized staff users. Student-facing API endpoints remain available through the application.
 
 ## Deploying on Vercel
 
@@ -142,11 +138,7 @@ Deploy the backend and frontend as two separate Vercel projects.
   On Vercel, the bundled SQLite database is copied to writable `/tmp/db.sqlite3` at runtime so the API can start. `/tmp` is ephemeral, so data and admin sessions can be lost when functions are rebuilt or replaced. SQLite is suitable for development or demonstration deployments, not persistent production data.
 5. Confirm the deployment with `https://<backend-project>.vercel.app/api/health/`.
 
-The backend root URL (`/`) also returns `{"status": "ok"}`. The Django admin URL is `/admin/`; create its superuser in the same production database after migrations:
-
-```powershell
-python manage.py createsuperuser
-```
+The backend root URL (`/`) also returns `{"status": "ok"}`. No administrator account is created automatically during deployment.
 
 The trained files `Backend/model/ourmodel.pkl` and `Backend/model/scaler.pkl` must remain in the deployment.
 
