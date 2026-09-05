@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { AppComponent } from './app.component';
+import { AssessmentComponent } from './assessment/assessment.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -16,19 +17,19 @@ describe('AppComponent', () => {
   });
 
   it('calculates total and average assessment scores', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    app.assessment.math_score = 70;
-    app.assessment.history_score = 80;
-    app.assessment.physics_score = 90;
-    app.assessment.chemistry_score = 60;
-    app.assessment.biology_score = 75;
-    app.assessment.english_score = 85;
-    app.assessment.geography_score = 70;
+    const fixture = TestBed.createComponent(AssessmentComponent);
+    const assessment = fixture.componentInstance;
+    assessment.assessment.math_score = 70;
+    assessment.assessment.history_score = 80;
+    assessment.assessment.physics_score = 90;
+    assessment.assessment.chemistry_score = 60;
+    assessment.assessment.biology_score = 75;
+    assessment.assessment.english_score = 85;
+    assessment.assessment.geography_score = 70;
 
-    app.calculateScores();
+    assessment.calculateScores();
 
-    expect(app.assessment.total_score).toBe(530);
-    expect(app.assessment.average_score).toBe(75.71);
+    expect(assessment.assessment.total_score).toBe(530);
+    expect(assessment.assessment.average_score).toBe(75.71);
   });
 });

@@ -1,0 +1,10 @@
+<div class="form-panel">
+    <div class="panel-top"><span>STUDENT ACCESS</span><button class="text-action"
+            (click)="navigate.emit('register')">Register →</button></div>
+    <h2>Welcome back</h2>
+    <p class="muted">Sign in to continue your assessment.</p>
+    <form (ngSubmit)="submit()"><label>Email<input type="email" name="email" [(ngModel)]="loginData.email"
+                required></label><label>Password<input type="password" name="password" [(ngModel)]="loginData.password"
+                required></label><button class="button primary full" type="submit">Sign in <span>→</span></button>
+    </form>
+</div>

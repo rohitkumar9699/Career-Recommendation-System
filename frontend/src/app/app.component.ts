@@ -1,55 +1,31 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Student } from './models';
-import { AuthApiService } from './auth-api.service';
 import { StudentApiService } from './student-api.service';
-import { AssessmentApiService } from './assessment-api.service';
-
-interface Assessment {
-  [key: string]: string | number | boolean;
-  gender: string;
-  part_time_job: boolean;
-  absence_days: number;
-  extracurricular_activities: boolean;
-  weekly_self_study_hours: number;
-  math_score: number;
-  history_score: number;
-  physics_score: number;
-  chemistry_score: number;
-  biology_score: number;
-  english_score: number;
-  geography_score: number;
-  total_score: number;
-  average_score: number;
-}
+import { WelcomeComponent } from './welcome/welcome.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { AssessmentComponent } from './assessment/assessment.component';
+import { UpdateProfileComponent } from './update-profile/update-profile.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, WelcomeComponent, LoginComponent, RegisterComponent, DashboardComponent, AssessmentComponent, UpdateProfileComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
-  private readonly authApi = inject(AuthApiService);
   private readonly studentApi = inject(StudentApiService);
-  private readonly assessmentApi = inject(AssessmentApiService);
   view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' = 'welcome';
   darkMode = localStorage.getItem('theme') === 'dark';
   student: Student | null = null;
   message = '';
   error = '';
   isSubmitting = false;
-  loginData = { email: '', password: '' };
-  registerData = { username: '', email: '', password: '', mobile: '', gender: 'male' };
   profileData = { name: '', mobile: '' };
-  assessment: Assessment = {
-    gender: 'male', part_time_job: false, absence_days: 0, extracurricular_activities: false,
-    weekly_self_study_hours: 0, math_score: 0, history_score: 0, physics_score: 0,
-    chemistry_score: 0, biology_score: 0, english_score: 0, geography_score: 0,
-    total_score: 0, average_score: 0
-  };
 
   constructor() {
     const saved = localStorage.getItem('student');
@@ -80,25 +56,18 @@ export class AppComponent {
     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
   }
 
-  submitLogin() {
-    this.clearStatus();
-    this.authApi.login(this.loginData).subscribe({ next: response => {
+  handleLogin(response: { student: Student; tokens: { access: string } }) {
       localStorage.setItem('access_token', response.tokens.access);
       localStorage.setItem('student', JSON.stringify(response.student));
       this.student = response.student;
       this.profileData = { name: response.student.username, mobile: response.student.mobile };
       this.view = 'student';
-    }, error: error => this.error = this.apiError(error, 'Unable to sign in.') });
+      this.clearStatus();
   }
 
-  submitRegister() {
-    this.clearStatus();
-    this.authApi.register(this.registerData).subscribe({ next: response => {
-      this.message = response.message;
-      this.loginData.email = this.registerData.email;
+  handleRegister(response: { message: string; email: string }) {
       this.go('login');
       this.message = response.message;
-    }, error: error => this.error = this.apiError(error, 'Registration failed.') });
   }
 
   loadAssessment() {
@@ -110,29 +79,12 @@ export class AppComponent {
     this.go('assessment');
   }
 
-  calculateScores() {
-    const subjects = ['math_score', 'history_score', 'physics_score', 'chemistry_score', 'biology_score', 'english_score', 'geography_score'] as const;
-    this.assessment.total_score = subjects.reduce((total, subject) => total + Number(this.assessment[subject]), 0);
-    this.assessment.average_score = Number((this.assessment.total_score / subjects.length).toFixed(2));
-  }
-
-  submitAssessment() {
-    this.clearStatus();
-    this.calculateScores();
-    const scoreFields = ['math_score', 'history_score', 'physics_score', 'chemistry_score', 'biology_score', 'english_score', 'geography_score'] as const;
-    const invalidScore = scoreFields.find(field => Number(this.assessment[field]) < 0 || Number(this.assessment[field]) > 100);
-    if (invalidScore) {
-      this.error = 'Each subject mark must be between 0 and 100.';
-      return;
-    }
-    this.isSubmitting = true;
-    this.assessmentApi.submit(this.assessment).subscribe({ next: response => {
-      this.isSubmitting = false;
+  handleAssessment(response: { message: string; student: Student }) {
       this.student = response.student;
       localStorage.setItem('student', JSON.stringify(response.student));
       this.message = response.message;
       this.view = 'student';
-    }, error: error => { this.isSubmitting = false; this.error = this.apiError(error, 'Assessment submission failed.'); } });
+      this.isSubmitting = false;
   }
 
   openUpdateDetails() {
@@ -140,14 +92,11 @@ export class AppComponent {
     this.go('update');
   }
 
-  updateProfile() {
-    this.clearStatus();
-    this.studentApi.updateDetails(this.profileData).subscribe({ next: response => {
+  handleProfileUpdate(response: { message: string; student: Student }) {
       this.student = response.student;
       localStorage.setItem('student', JSON.stringify(response.student));
       this.message = response.message;
       this.view = 'student';
-    }, error: error => this.error = this.apiError(error, 'Profile update failed.') });
   }
 
   logout() {
@@ -159,9 +108,4 @@ export class AppComponent {
 
   private clearStatus() { this.message = ''; this.error = ''; }
 
-  private apiError(error: { error?: { message?: string; [key: string]: unknown } }, fallback: string): string {
-    if (error.error?.message) return error.error.message;
-    const details = error.error ? Object.values(error.error).flat().filter(Boolean) : [];
-    return details.length ? details.join(' ') : fallback;
-  }
 }

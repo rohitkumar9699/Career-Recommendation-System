@@ -1,0 +1,39 @@
+<section class="assessment">
+    <div class="assessment-head">
+        <div>
+            <p class="eyebrow">ASSESSMENT / 01</p>
+            <h1>Show us how<br><em>you think.</em></h1>
+        </div>
+        <p class="lead">Complete every field. Your total and average update as you work.</p>
+    </div>
+    <form (ngSubmit)="submit()" class="assessment-form">
+        <div class="field-group">
+            <h3>About your routine</h3>
+            <div class="form-grid three"><label>Gender<select name="aGender" [(ngModel)]="assessment.gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select></label><label>Part-time job<select name="job" [(ngModel)]="assessment.part_time_job">
+                        <option [ngValue]="false">No</option>
+                        <option [ngValue]="true">Yes</option>
+                    </select></label><label>Extracurriculars<select name="extra"
+                        [(ngModel)]="assessment.extracurricular_activities">
+                        <option [ngValue]="false">No</option>
+                        <option [ngValue]="true">Yes</option>
+                    </select></label></div>
+            <div class="form-grid"><label>Absence days<input type="number" name="absence" min="0"
+                        [(ngModel)]="assessment.absence_days"></label><label>Weekly self-study hours<input type="number"
+                        name="study" min="0" [(ngModel)]="assessment.weekly_self_study_hours"></label></div>
+        </div>
+        <div class="field-group">
+            <h3>Subject scores <span>out of 100</span></h3>
+            <div class="score-grid"><label *ngFor="let subject of subjects">{{ subject.replace('_score','') | titlecase
+                    }}<input type="number" min="0" max="100" [name]="subject" [(ngModel)]="assessment[subject]"
+                        (ngModelChange)="calculateScores()" required></label></div>
+        </div>
+        <div class="totals">
+            <div><span>TOTAL SCORE</span><strong>{{ assessment.total_score }}</strong></div>
+            <div><span>AVERAGE</span><strong>{{ assessment.average_score }}</strong></div><button class="button primary"
+                type="submit" [disabled]="isSubmitting">Get recommendations <span>→</span></button>
+        </div>
+    </form>
+</section>
