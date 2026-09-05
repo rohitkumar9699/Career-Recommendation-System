@@ -139,6 +139,9 @@ def submit_assessment(request):
     student.recommendation_3 = recommendations[2]
     student.save()
 
-    return Response({'message': 'Submission successful.', 'recommendations': recommendations}, status=status.HTTP_200_OK)
+    return Response({
+        # 'message': 'Submission successful.',
+        'student': StudentSerializer(student).data,
+    }, status=status.HTTP_200_OK)
 
 

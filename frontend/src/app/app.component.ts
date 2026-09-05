@@ -24,20 +24,6 @@ interface Assessment {
   average_score: number;
 }
 
-interface AssessmentResult {
-  absence_days: number;
-  weekly_self_study_hours: number;
-  total_score: number;
-  average_score: number;
-  math_score: number;
-  history_score: number;
-  physics_score: number;
-  chemistry_score: number;
-  biology_score: number;
-  english_score: number;
-  geography_score: number;
-}
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -142,10 +128,8 @@ export class AppComponent {
     this.isSubmitting = true;
     this.assessmentApi.submit(this.assessment).subscribe({ next: response => {
       this.isSubmitting = false;
-      if (this.student) {
-        this.student = { ...this.student, recommendation_1: response.recommendations[0], recommendation_2: response.recommendations[1], recommendation_3: response.recommendations[2] };
-        localStorage.setItem('student', JSON.stringify(this.student));
-      }
+      this.student = response.student;
+      localStorage.setItem('student', JSON.stringify(response.student));
       this.message = response.message;
       this.view = 'student';
     }, error: error => { this.isSubmitting = false; this.error = this.apiError(error, 'Assessment submission failed.'); } });
