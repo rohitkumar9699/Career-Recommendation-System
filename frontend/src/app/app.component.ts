@@ -8,18 +8,19 @@ import { RegisterComponent } from './register/register.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AssessmentComponent } from './assessment/assessment.component';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
+import { RoadmapsComponent } from './roadmaps/roadmaps.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, WelcomeComponent, LoginComponent, RegisterComponent, DashboardComponent, AssessmentComponent, UpdateProfileComponent],
+  imports: [CommonModule, WelcomeComponent, LoginComponent, RegisterComponent, DashboardComponent, AssessmentComponent, UpdateProfileComponent, RoadmapsComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
   private readonly studentApi = inject(StudentApiService);
-  view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' = 'welcome';
+  view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' | 'roadmap' = 'welcome';
   darkMode = localStorage.getItem('theme') === 'dark';
   student: Student | null = null;
   message = '';
@@ -46,9 +47,13 @@ export class AppComponent {
     }
   }
 
-  go(view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update') {
+  go(view: 'welcome' | 'login' | 'register' | 'student' | 'assessment' | 'update' | 'roadmap') {
     this.clearStatus();
     this.view = view;
+  }
+
+  roadmapReady(): boolean {
+    return !!this.student && this.student.recommendation_1 !== 'Not Recommended Yet' && this.student.recommendation_1 !== 'Not recommended yet';
   }
 
   toggleTheme() {

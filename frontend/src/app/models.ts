@@ -22,6 +22,17 @@ export interface Student {
   } | null;
 }
 
+export interface CareerRoadmap {
+  id: number;
+  career: string;
+  score: number;
+  degree_course: string[];
+  what_you_do: string;
+  skills: string[];
+  what_to_explore: string[];
+  created_at: string;
+}
+
 export interface Assessment {
   [key: string]: string | number | boolean;
   gender: string;

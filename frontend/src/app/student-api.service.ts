@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Student } from './models';
+import { CareerRoadmap, Student } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class StudentApiService {
@@ -15,6 +15,10 @@ export class StudentApiService {
 
   profile(): Observable<Student> {
     return this.http.get<Student>(`${this.baseUrl}/students/me/`, { headers: this.headers() });
+  }
+
+  roadmaps(): Observable<CareerRoadmap[]> {
+    return this.http.get<CareerRoadmap[]>(`${this.baseUrl}/students/me/roadmaps/`, { headers: this.headers() });
   }
 
   updateDetails(data: { name: string; mobile: string }): Observable<{ message: string; student: Student }> {

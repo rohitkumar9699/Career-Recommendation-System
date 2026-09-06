@@ -7,9 +7,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import AssessmentResult
+from .models import AssessmentResult, CareerRoadmap
 from .recommendation import generate_recommendations
-from .serializers import RegisterStudentSerializer, StudentSerializer
+from .serializers import CareerRoadmapSerializer, RegisterStudentSerializer, StudentSerializer
 
 Student = get_user_model()
 
@@ -77,6 +77,29 @@ def update_student_profile(request):
     return Response({'message': 'Successfully updated.', 'student': StudentSerializer(student).data}, status=status.HTTP_200_OK)
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def student_career_roadmaps(request):
+    student = request.user
+    if request.method == 'GET':
+        roadmaps = CareerRoadmap.objects.filter(student=student)
+        return Response(CareerRoadmapSerializer(roadmaps, many=True).data)
+
+    serializer = CareerRoadmapSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    career = serializer.validated_data['career']
+    allowed_careers = {student.recommendation_1, student.recommendation_2, student.recommendation_3}
+    if career not in allowed_careers:
+        return Response({'message': 'This career is not one of your recommendations.'}, status=status.HTTP_400_BAD_REQUEST)
+    roadmap, created = CareerRoadmap.objects.update_or_create(
+        student=student,
+        career=career,
+        defaults=serializer.validated_data,
+    )
+    return Response(CareerRoadmapSerializer(roadmap).data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submit_assessment(request):
@@ -132,6 +155,7 @@ def submit_assessment(request):
         geography_score=assessment.geography_score,
         total_score=assessment.total_score,
         average_score=assessment.average_score,
+        student=student,
     )
 
     student.recommendation_1 = recommendations[0]

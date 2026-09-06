@@ -1,0 +1,75 @@
+<section class="roadmaps" *ngIf="!isLoading; else loading">
+  <div class="roadmaps-header">
+    <div>
+      <span class="eyebrow">CAREER ROADMAP</span>
+      <h2>Your personalized plan     <p class="subtitle">Explore the pathways, skills, and study directions aligned with your recommendations.</p>
+ </h2> 
+    </div>
+  </div>
+
+  <div class="roadmap-list" *ngIf="roadmaps.length; else empty">
+    <article class="roadmap-card" *ngFor="let roadmap of roadmaps">
+      <div class="roadmap-top">
+        <div>
+          <span class="mini-label">Career match</span>
+          <h3>{{ roadmap.career }}</h3>
+        </div>
+        <span class="score">Probablity Score {{ roadmap.score*100 | number:'1.0-2' }}%</span>
+      </div>
+
+      <div class="roadmap-section">
+        <div class="section-title-row">
+          <span class="section-bullet"></span>
+          <h4>Degree / course</h4>
+        </div>
+        <ul>
+          <li *ngFor="let item of roadmap.degree_course">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="roadmap-section">
+        <div class="section-title-row">
+          <span class="section-bullet"></span>
+          <h4>What you do</h4>
+        </div>
+        <p>{{ roadmap.what_you_do }}</p>
+      </div>
+
+      <div class="roadmap-section">
+        <div class="section-title-row">
+          <span class="section-bullet"></span>
+          <h4>Skills</h4>
+        </div>
+        <ul>
+          <li *ngFor="let item of roadmap.skills">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="roadmap-section">
+        <div class="section-title-row">
+          <span class="section-bullet"></span>
+          <h4>Explore</h4>
+        </div>
+        <ul>
+          <li *ngFor="let item of roadmap.what_to_explore">{{ item }}</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+
+  <ng-template #empty>
+    <div class="empty-state">
+      <h3>Roadmap details are not available yet.</h3>
+      <p>Please check back after the assessment results are finalized.</p>
+    </div>
+  </ng-template>
+</section>
+
+<ng-template #loading>
+  <section class="roadmaps loading-state">
+    <div class="loading-box">
+      <span class="spinner"></span>
+      <p>Loading roadmap details...</p>
+    </div>
+  </section>
+</ng-template>

@@ -1,8 +1,21 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import AssessmentResult
+from .models import AssessmentResult, CareerRoadmap
 
 Student = get_user_model()
+
+
+class CareerRoadmapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CareerRoadmap
+        fields = ['id', 'career', 'score', 'degree_course', 'what_you_do', 'skills', 'what_to_explore', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate(self, attrs):
+        for field in ('degree_course', 'skills', 'what_to_explore'):
+            if not isinstance(attrs.get(field), list) or not all(isinstance(item, str) for item in attrs[field]):
+                raise serializers.ValidationError({field: 'Must be a list of strings.'})
+        return attrs
 
 
 class StudentSerializer(serializers.ModelSerializer):

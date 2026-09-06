@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import AssessmentResult, Student
+from .models import AssessmentResult, CareerRoadmap, Student
 
 
 def set_default_recommendations(student):
@@ -56,3 +56,9 @@ class AssessmentResultAdmin(admin.ModelAdmin):
 			student.recommendation_3 = 'Not Recommended Yet'
 			set_default_recommendations(student)
 
+@admin.register(CareerRoadmap)
+class CareerRoadmapAdmin(admin.ModelAdmin):
+	list_display = [
+        field.name
+        for field in CareerRoadmap._meta.fields
+    ]

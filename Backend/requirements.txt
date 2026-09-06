@@ -10,3 +10,4 @@ scikit-learn>=1.9
 pandas>=3.0
 joblib>=1.6
 python-dotenv
+google-genai>=1.0.0

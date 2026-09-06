@@ -2,11 +2,12 @@
   <header class="topbar">
     <a class="brand" (click)="go('welcome')"><span class="brand-mark">CR</span><span>CareerRoute</span></a>
     <nav>
-      <button class="link-button" *ngIf="view === 'student' || view === 'assessment' || view === 'update'" (click)="go('student')">Dashboard</button>
+      <button class="link-button" *ngIf="view === 'student' || view === 'assessment' || view === 'update' || view === 'roadmap'" (click)="go('student')">Dashboard</button>
+      <button class="link-button" *ngIf="view === 'student' && roadmapReady()" (click)="go('roadmap')">Career Roadmap</button>
       <button class="link-button" *ngIf="view === 'student'" (click)="openUpdateDetails()">Update details</button>
       <span class="marks-chip" *ngIf="student?.assessment_result as result">Marks {{ result.total_score }} / 700</span>
       <button class="link-button" (click)="toggleTheme()">{{ darkMode ? 'Light mode' : 'Dark mode' }}</button>
-      <button class="link-button" *ngIf="view === 'student' || view === 'assessment' || view === 'update'" (click)="logout()">Sign out</button>
+      <button class="link-button" *ngIf="view === 'student' || view === 'assessment' || view === 'update' || view === 'roadmap'" (click)="logout()">Sign out</button>
     </nav>
   </header>
 
@@ -23,6 +24,8 @@
   </section>
 
   <app-dashboard *ngIf="view === 'student' && student" [student]="student" (assessment)="loadAssessment()" (update)="openUpdateDetails()"></app-dashboard>
+
+  <app-roadmaps *ngIf="view === 'roadmap' && student && roadmapReady()" [student]="student"></app-roadmaps>
 
   <app-update-profile *ngIf="view === 'update' && student" [profile]="profileData" (cancel)="go('student')" (success)="handleProfileUpdate($event)" (failure)="error = $event"></app-update-profile>
 

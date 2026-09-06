@@ -41,3 +41,23 @@ class AssessmentResult(models.Model):
     def __str__(self):
         return f'{self.student.email} - result'
 
+
+class CareerRoadmap(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='career_roadmaps')
+    career = models.CharField(max_length=100)
+    score = models.FloatField()
+    degree_course = models.JSONField(default=list)
+    what_you_do = models.TextField()
+    skills = models.JSONField(default=list)
+    what_to_explore = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['student', 'career'], name='unique_student_career_roadmap'),
+        ]
+        ordering = ['-score', 'career']
+
+    def __str__(self):
+        return f'{self.student.email} - {self.career}'
+
