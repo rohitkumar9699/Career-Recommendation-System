@@ -1,6 +1,6 @@
 # Career Recommendation System
 
-A Django REST API and Angular 18 single-page application for student registration, authentication, academic assessment, career recommendations, profile updates, and administrator student-record management. Recommendations are generated from the bundled model and scaler files in `Backend/model/`.
+A Django REST API and Angular 18 single-page application for student registration, authentication, academic assessment, career recommendations, profile updates, and career roadmaps. Recommendations are generated from the bundled model and scaler files in `Backend/model/`, then enriched with roadmap information for the recommended careers.
 
 ## Purpose
 
@@ -21,6 +21,8 @@ The system helps students:
 - Explore a wider range of career options.
 - Discover careers they may not have previously known about.
 - Receive career recommendations based on their provided information and assessment results.
+- Review degree courses, skills, activities, and exploration areas for recommended careers.
+- Save and revisit career roadmap information from their dashboard.
 - Make more informed career decisions after completing school.
 
 The goal is to ensure that **limited career awareness does not limit a student's future opportunities**.
@@ -28,7 +30,7 @@ The goal is to ensure that **limited career awareness does not limit a student's
 ## Requirements
 
 - Python 3.10 or newer
-- Node.js and npm
+- Node.js 18 or newer and npm
 - PostgreSQL (Supabase) or SQLite for local fallback
 
 ## Project Structure
@@ -37,7 +39,8 @@ The goal is to ensure that **limited career awareness does not limit a student's
 Backend/
   api/                         Django app, API views, serializers, models, and ML logic
   career_recommendation_system/ Django project settings and WSGI configuration
-  model/                       ourmodel.pkl and scaler.pkl
+  model/                       Trained ourmodel.pkl and scaler.pkl files
+  db.sqlite3                   Local SQLite database fallback
   manage.py
   requirements.txt
 frontend/
@@ -66,7 +69,12 @@ The API is available at `http://localhost:8000/`. The local database is `Backend
 
 ### Backend Configuration
 
-The project uses Supabase PostgreSQL when `DATABASE_URL` or `POSTGRES_HOST` is set, and otherwise falls back to SQLite at `Backend/db.sqlite3`. Optional settings are `DJANGO_SECRET_KEY` and `DJANGO_DEBUG`. `DJANGO_DEBUG` is enabled when set to `1`; otherwise it is disabled.
+The project uses PostgreSQL when `DATABASE_URL` or `POSTGRES_HOST` is set, and otherwise falls back to SQLite at `Backend/db.sqlite3`. The supported environment variables are:
+
+- `DJANGO_SECRET_KEY`: Django signing key. Set a stable value outside local development.
+- `DJANGO_DEBUG`: Set to `1` to enable debug mode; any other value disables it.
+- `DATABASE_URL`: PostgreSQL connection URL, including credentials and optional query parameters such as `sslmode=require`.
+- `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and `POSTGRES_SSLMODE`: PostgreSQL settings used when `DATABASE_URL` is not supplied.
 
 For Supabase, set the connection string without committing it to the repository:
 
@@ -111,13 +119,44 @@ All application endpoints use the `/api/` prefix. JWT-protected endpoints requir
 | POST | `/api/login/` | Student login with `email` and `password`; returns student data and access/refresh JWTs |
 | GET | `/api/students/me/` | Return the authenticated student profile |
 | PUT | `/api/students/update/` | Update authenticated student `name` and 10-digit `mobile` |
+| GET | `/api/students/me/roadmaps/` | Return saved roadmaps for the authenticated student |
+| POST | `/api/students/me/roadmaps/` | Create or update a roadmap for one of the student's recommended careers |
 | POST | `/api/assessment/submit/` | Submit one assessment and return three recommendations |
 | POST | `/api/token/` | SimpleJWT token endpoint |
 | POST | `/api/token/refresh/` | Refresh a JWT |
 
-Assessment submissions require `gender`, `absence_days`, `weekly_self_study_hours`, and scores for `math_score`, `history_score`, `physics_score`, `chemistry_score`, `biology_score`, `english_score`, and `geography_score`. Scores must be from 0 to 100. The frontend also sends `part_time_job`, `extracurricular_activities`, `total_score`, and `average_score`.
+Assessment submissions require `gender`, `absence_days`, `weekly_self_study_hours`, and scores for `math_score`, `history_score`, `physics_score`, `chemistry_score`, `biology_score`, `english_score`, and `geography_score`. Scores must be from 0 to 100. The frontend also sends `part_time_job`, `extracurricular_activities`, `total_score`, and `average_score`. Each student can submit the assessment once.
+
+After a successful assessment, the backend stores roadmap data for the generated careers when the roadmap provider is available. A roadmap has the following fields:
+
+```json
+{
+  "career": "Software Engineer",
+  "score": 0.82,
+  "degree_course": ["Computer Science"],
+  "what_you_do": "Build and maintain software applications.",
+  "skills": ["Programming", "Problem solving"],
+  "what_to_explore": ["Web development", "Cloud computing"]
+}
+```
+
+The `career` in a manually submitted roadmap must match one of the authenticated student's three recommendations. `degree_course`, `skills`, and `what_to_explore` must each be lists of strings.
 
 Django admin is available at `/admin/` for authorized staff users. Student-facing API endpoints remain available through the application.
+
+## Testing
+
+Run Django tests from `Backend`:
+
+```powershell
+python manage.py test
+```
+
+Run Angular unit tests from `frontend`:
+
+```powershell
+npm test
+```
 
 ## Deploying on Vercel
 
@@ -135,7 +174,7 @@ Deploy the backend and frontend as two separate Vercel projects.
    python manage.py migrate
    ```
 
-  On Vercel, the bundled SQLite database is copied to writable `/tmp/db.sqlite3` at runtime so the API can start. `/tmp` is ephemeral, so data and admin sessions can be lost when functions are rebuilt or replaced. SQLite is suitable for development or demonstration deployments, not persistent production data.
+    On Vercel, the bundled SQLite database is copied to writable `/tmp/db.sqlite3` at runtime so the API can start. `/tmp` is ephemeral, so data and admin sessions can be lost when functions are rebuilt or replaced. SQLite is suitable for development or demonstration deployments, not persistent production data. Configure `DATABASE_URL` for persistent production data.
 5. Confirm the deployment with `https://<backend-project>.vercel.app/api/health/`.
 
 The backend root URL (`/`) also returns `{"status": "ok"}`. No administrator account is created automatically during deployment.
@@ -145,7 +184,7 @@ The trained files `Backend/model/ourmodel.pkl` and `Backend/model/scaler.pkl` mu
 ### 2. Deploy Angular
 
 1. Create a second Vercel project from the same repository and set its **Root Directory** to `frontend`.
-2. The current frontend rewrite targets `https://backend-ecru-phi-99.vercel.app`. Update both Vercel config files if the backend hostname changes.
+2. The current frontend rewrite targets `https://backend-ecru-phi-99.vercel.app`. Update `frontend/vercel.json` if the backend hostname changes.
 3. Deploy. The configuration runs `npm run build`, serves Angular's `dist/frontend/browser` output, proxies `/api/*` to Django, and rewrites other paths to `index.html` for the single-page application.
 
 The frontend source uses same-origin `/api` URLs, so local requests use `frontend/proxy.conf.json` and deployed requests use the Vercel rewrite.
